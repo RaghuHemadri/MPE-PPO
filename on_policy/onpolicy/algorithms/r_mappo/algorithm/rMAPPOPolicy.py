@@ -64,7 +64,7 @@ class R_MAPPOPolicy:
         :return rnn_states_actor: (torch.Tensor) updated actor network RNN states.
         :return rnn_states_critic: (torch.Tensor) updated critic network RNN states.
         """
-        actions, action_log_probs, rnn_states_actor = self.actor(obs,
+        actions, action_log_probs, rnn_states_actor, z, mu, log_var = self.actor(obs,
                                                                  rnn_states_actor,
                                                                  masks,
                                                                  available_actions,
@@ -103,7 +103,7 @@ class R_MAPPOPolicy:
         :return action_log_probs: (torch.Tensor) log probabilities of the input actions.
         :return dist_entropy: (torch.Tensor) action distribution entropy for the given inputs.
         """
-        action_log_probs, dist_entropy = self.actor.evaluate_actions(obs,
+        action_log_probs, dist_entropy, z, mu, log_var = self.actor.evaluate_actions(obs,
                                                                      rnn_states_actor,
                                                                      action,
                                                                      masks,
@@ -123,5 +123,5 @@ class R_MAPPOPolicy:
                                   (if None, all actions available)
         :param deterministic: (bool) whether the action should be mode of distribution or should be sampled.
         """
-        actions, _, rnn_states_actor = self.actor(obs, rnn_states_actor, masks, available_actions, deterministic)
+        actions, _, rnn_states_actor, z, mu, log_var = self.actor(obs, rnn_states_actor, masks, available_actions, deterministic)
         return actions, rnn_states_actor

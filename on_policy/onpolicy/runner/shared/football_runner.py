@@ -175,7 +175,7 @@ class FootballRunner(Runner):
             self.trainer.prep_rollout()
 
             # [n_envs, n_agents, ...] -> [n_envs*n_agents, ...]
-            eval_actions, eval_rnn_states = self.trainer.policy.act(
+            eval_actions, eval_rnn_states, _, _, _ = self.trainer.policy.act(
                 np.concatenate(eval_obs),
                 np.concatenate(eval_rnn_states),
                 np.concatenate(eval_masks),
@@ -247,7 +247,7 @@ class FootballRunner(Runner):
             render_dones = False
             while not np.any(render_dones):
                 self.trainer.prep_rollout()
-                render_actions, render_rnn_states = self.trainer.policy.act(
+                render_actions, render_rnn_states, _, _, _ = self.trainer.policy.act(
                     np.concatenate(render_obs),
                     np.concatenate(render_rnn_states),
                     np.concatenate(render_masks),

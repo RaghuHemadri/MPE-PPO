@@ -1,7 +1,7 @@
 import numpy as np
 import torch
 import torch.nn as nn
-from onpolicy.utils.util import get_gard_norm, huber_loss, mse_loss
+from onpolicy.utils.util import get_gard_norm, huber_loss, mse_loss, kl_divergence
 from onpolicy.utils.valuenorm import ValueNorm
 from onpolicy.algorithms.utils.util import check
 
@@ -29,6 +29,7 @@ class R_MAPPO():
         self.entropy_coef = args.entropy_coef
         self.max_grad_norm = args.max_grad_norm       
         self.huber_delta = args.huber_delta
+        self.beta = args.beta
 
         self._use_recurrent_policy = args.use_recurrent_policy
         self._use_naive_recurrent = args.use_naive_recurrent_policy
@@ -39,6 +40,7 @@ class R_MAPPO():
         self._use_valuenorm = args.use_valuenorm
         self._use_value_active_masks = args.use_value_active_masks
         self._use_policy_active_masks = args.use_policy_active_masks
+        self._use_reparametrization = args.use_reparametrization
         
         assert (self._use_popart and self._use_valuenorm) == False, ("self._use_popart and self._use_valuenorm can not be set True simultaneously")
         
@@ -112,7 +114,7 @@ class R_MAPPO():
         active_masks_batch = check(active_masks_batch).to(**self.tpdv)
 
         # Reshape to do in a single forward pass for all steps
-        values, action_log_probs, dist_entropy = self.policy.evaluate_actions(share_obs_batch,
+        values, action_log_probs, dist_entropy, z, mu, log_var = self.policy.evaluate_actions(share_obs_batch,
                                                                               obs_batch, 
                                                                               rnn_states_batch, 
                                                                               rnn_states_critic_batch, 
@@ -134,6 +136,9 @@ class R_MAPPO():
             policy_action_loss = -torch.sum(torch.min(surr1, surr2), dim=-1, keepdim=True).mean()
 
         policy_loss = policy_action_loss
+
+        if self._use_reparametrization:
+            policy_loss += torch.mul(self.beta, kl_divergence(z, mu, log_var))
 
         self.policy.actor_optimizer.zero_grad()
 
