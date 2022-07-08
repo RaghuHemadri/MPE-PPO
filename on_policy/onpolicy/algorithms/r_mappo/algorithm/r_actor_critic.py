@@ -6,6 +6,7 @@ from onpolicy.algorithms.utils.mlp import MLPBase
 from onpolicy.algorithms.utils.rnn import RNNLayer
 from onpolicy.algorithms.utils.act import ACTLayer
 from onpolicy.algorithms.utils.popart import PopArt
+from onpolicy.algorithms.utils.reparametrization import reparamatrization as Rep
 from onpolicy.utils.util import get_shape_from_obs_space
 
 
@@ -26,6 +27,7 @@ class R_Actor(nn.Module):
         self._use_policy_active_masks = args.use_policy_active_masks
         self._use_naive_recurrent_policy = args.use_naive_recurrent_policy
         self._use_recurrent_policy = args.use_recurrent_policy
+        self._use_reparametrization = args.use_reparametrization
         self._recurrent_N = args.recurrent_N
         self.tpdv = dict(dtype=torch.float32, device=device)
 
@@ -35,6 +37,9 @@ class R_Actor(nn.Module):
 
         if self._use_naive_recurrent_policy or self._use_recurrent_policy:
             self.rnn = RNNLayer(self.hidden_size, self.hidden_size, self._recurrent_N, self._use_orthogonal)
+
+        if self._use_reparametrization:
+            self.rep = Rep(self.hidden_size)
 
         self.act = ACTLayer(action_space, self.hidden_size, self._use_orthogonal, self._gain)
 
@@ -54,6 +59,7 @@ class R_Actor(nn.Module):
         :return action_log_probs: (torch.Tensor) log probabilities of taken actions.
         :return rnn_states: (torch.Tensor) updated RNN hidden states.
         """
+        z, mu, log_var = None, None, None
         obs = check(obs).to(**self.tpdv)
         rnn_states = check(rnn_states).to(**self.tpdv)
         masks = check(masks).to(**self.tpdv)
@@ -65,9 +71,13 @@ class R_Actor(nn.Module):
         if self._use_naive_recurrent_policy or self._use_recurrent_policy:
             actor_features, rnn_states = self.rnn(actor_features, rnn_states, masks)
 
+        if self._use_reparametrization:
+            z, mu, log_var = self.rep(actor_features)
+            actor_features = z
+
         actions, action_log_probs = self.act(actor_features, available_actions, deterministic)
 
-        return actions, action_log_probs, rnn_states
+        return actions, action_log_probs, rnn_states, z, mu, log_var
 
     def evaluate_actions(self, obs, rnn_states, action, masks, available_actions=None, active_masks=None):
         """
@@ -83,6 +93,7 @@ class R_Actor(nn.Module):
         :return action_log_probs: (torch.Tensor) log probabilities of the input actions.
         :return dist_entropy: (torch.Tensor) action distribution entropy for the given inputs.
         """
+        z, mu, log_var = None, None, None
         obs = check(obs).to(**self.tpdv)
         rnn_states = check(rnn_states).to(**self.tpdv)
         action = check(action).to(**self.tpdv)
@@ -98,13 +109,17 @@ class R_Actor(nn.Module):
         if self._use_naive_recurrent_policy or self._use_recurrent_policy:
             actor_features, rnn_states = self.rnn(actor_features, rnn_states, masks)
 
+        if self._use_reparametrization:
+            z, mu, log_var = self.rep(actor_features)
+            actor_features = z
+
         action_log_probs, dist_entropy = self.act.evaluate_actions(actor_features,
                                                                    action, available_actions,
                                                                    active_masks=
                                                                    active_masks if self._use_policy_active_masks
                                                                    else None)
 
-        return action_log_probs, dist_entropy
+        return action_log_probs, dist_entropy, z, mu, log_var
 
 
 class R_Critic(nn.Module):

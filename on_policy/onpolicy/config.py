@@ -284,4 +284,8 @@ def get_config():
     # pretrained parameters
     parser.add_argument("--model_dir", type=str, default=None, help="by default None. set the path to pretrained model.")
 
+    #reparametrization parameters
+    parser.add_argument("--use_reparametrization", action='store_true', default=False, help="by default, do not use reparametrization. If set reparametrization is done.")
+    parser.add_argument("--beta", type=float, default=0.1, help="the weighted hyperparameter for reparametrization.")
+
     return parser

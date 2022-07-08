@@ -49,6 +49,8 @@ class ACTLayer(nn.Module):
         :return actions: (torch.Tensor) actions to take.
         :return action_log_probs: (torch.Tensor) log probabilities of taken actions.
         """
+        z, mu, log_var = self.reparametrization(x)
+        x = z
         if self.mixed_action :
             actions = []
             action_log_probs = []

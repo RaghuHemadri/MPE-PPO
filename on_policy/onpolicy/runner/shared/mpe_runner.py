@@ -148,7 +148,7 @@ class MPERunner(Runner):
 
         for eval_step in range(self.episode_length):
             self.trainer.prep_rollout()
-            eval_action, eval_rnn_states = self.trainer.policy.act(np.concatenate(eval_obs),
+            eval_action, eval_rnn_states, _, _, _ = self.trainer.policy.act(np.concatenate(eval_obs),
                                                 np.concatenate(eval_rnn_states),
                                                 np.concatenate(eval_masks),
                                                 deterministic=True)
@@ -205,7 +205,7 @@ class MPERunner(Runner):
                 calc_start = time.time()
 
                 self.trainer.prep_rollout()
-                action, rnn_states = self.trainer.policy.act(np.concatenate(obs),
+                action, rnn_states, _, _, _ = self.trainer.policy.act(np.concatenate(obs),
                                                     np.concatenate(rnn_states),
                                                     np.concatenate(masks),
                                                     deterministic=True)

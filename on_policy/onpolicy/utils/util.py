@@ -28,6 +28,24 @@ def huber_loss(e, d):
 def mse_loss(e):
     return e**2/2
 
+def kl_divergence(z, mu, log_var):
+    # --------------------------
+    # Monte carlo KL divergence
+    # --------------------------
+    # 1. define the first two probabilities (in this case Normal for both)
+    std = torch.exp(log_var / 2)
+    p = torch.distributions.Normal(torch.zeros_like(mu), torch.ones_like(std))
+    q = torch.distributions.Normal(mu, std)
+
+    # 2. get the probabilities from the equation
+    log_qzx = q.log_prob(z)
+    log_pz = p.log_prob(z)
+
+    # kl
+    kl = (log_qzx - log_pz)
+    kl = kl.sum(-1)
+    return kl
+
 def get_shape_from_obs_space(obs_space):
     if obs_space.__class__.__name__ == 'Box':
         obs_shape = obs_space.shape

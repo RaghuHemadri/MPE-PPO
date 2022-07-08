@@ -251,7 +251,7 @@ class HanabiRunner(Runner):
                     break
 
                 self.trainer.prep_rollout()
-                eval_action, eval_rnn_state = self.trainer.policy.act(eval_obs[eval_choose],
+                eval_action, eval_rnn_state, _, _, _ = self.trainer.policy.act(eval_obs[eval_choose],
                                                                 eval_rnn_states[eval_choose, agent_id],
                                                                 eval_masks[eval_choose, agent_id],
                                                                 eval_available_actions[eval_choose],
@@ -306,7 +306,7 @@ class HanabiRunner(Runner):
                         break
 
                     self.trainer.prep_rollout()
-                    eval_action, eval_rnn_state = self.trainer.policy.act(eval_obs[eval_choose],
+                    eval_action, eval_rnn_state, _, _, _ = self.trainer.policy.act(eval_obs[eval_choose],
                                                                     eval_rnn_states[eval_choose, agent_id],
                                                                     eval_masks[eval_choose, agent_id],
                                                                     eval_available_actions[eval_choose],

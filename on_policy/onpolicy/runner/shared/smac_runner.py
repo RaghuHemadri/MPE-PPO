@@ -173,7 +173,7 @@ class SMACRunner(Runner):
 
         while True:
             self.trainer.prep_rollout()
-            eval_actions, eval_rnn_states = \
+            eval_actions, eval_rnn_states, _, _, _ = \
                 self.trainer.policy.act(np.concatenate(eval_obs),
                                         np.concatenate(eval_rnn_states),
                                         np.concatenate(eval_masks),
