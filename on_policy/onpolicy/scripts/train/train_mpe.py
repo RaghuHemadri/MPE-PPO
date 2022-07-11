@@ -7,9 +7,14 @@ import setproctitle
 import numpy as np
 from pathlib import Path
 import torch
+
+sys.path.append('../..')
+
 from onpolicy.config import get_config
 from onpolicy.envs.mpe.MPE_env import MPEEnv
 from onpolicy.envs.env_wrappers import SubprocVecEnv, DummyVecEnv
+
+
 
 """Train script for MPEs."""
 
