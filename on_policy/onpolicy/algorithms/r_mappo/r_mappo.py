@@ -138,7 +138,9 @@ class R_MAPPO():
         policy_loss = policy_action_loss
 
         if self._use_reparametrization:
-            policy_loss += torch.mul(self.beta, kl_divergence(z, mu, log_var))
+            kl_loss = kl_divergence(z, mu, log_var)
+            kl_loss = torch.mul(self.beta, kl_loss)
+            policy_loss -= torch.sum(kl_loss, dim=-1, keepdim=True).mean()
 
         self.policy.actor_optimizer.zero_grad()
 
