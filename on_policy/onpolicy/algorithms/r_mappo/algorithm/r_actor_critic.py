@@ -29,6 +29,8 @@ class R_Actor(nn.Module):
         self._use_recurrent_policy = args.use_recurrent_policy
         self._use_reparametrization = args.use_reparametrization
         self._recurrent_N = args.recurrent_N
+        self._mu_coef = args.mu_coef
+        self._var_coef = args.var_coef
         self.tpdv = dict(dtype=torch.float32, device=device)
 
         obs_shape = get_shape_from_obs_space(obs_space)
@@ -39,7 +41,7 @@ class R_Actor(nn.Module):
             self.rnn = RNNLayer(self.hidden_size, self.hidden_size, self._recurrent_N, self._use_orthogonal)
 
         if self._use_reparametrization:
-            self.rep = Rep(self.hidden_size)
+            self.rep = Rep(self.hidden_size, self._mu_coef, self._var_coef)
 
         self.act = ACTLayer(action_space, self.hidden_size, self._use_orthogonal, self._gain)
 
