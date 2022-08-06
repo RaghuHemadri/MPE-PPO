@@ -26,7 +26,8 @@ var_coeffs=1
 use_reparametrization="True"
 
 
-python train/train_mpe.py --env_name ${env} --algorithm_name ${algo} \
+python -u onpolicy/scripts/train/train_mpe.py --env_name ${env} \
+--algorithm_name ${algo} \
 --experiment_name ${exp_names[$SLURM_ARRAY_TASK_ID]} \
 --scenario_name ${scenario} \
 --num_agents ${num_agents} --num_landmarks ${num_landmarks} \
