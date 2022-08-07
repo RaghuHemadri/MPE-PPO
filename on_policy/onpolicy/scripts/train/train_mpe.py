@@ -8,7 +8,7 @@ import numpy as np
 from pathlib import Path
 import torch
 
-sys.path.append('../..')
+sys.path.append(os.path.abspath(os.getcwd()))
 
 from onpolicy.config import get_config
 from onpolicy.envs.mpe.MPE_env import MPEEnv
