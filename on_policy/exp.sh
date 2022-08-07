@@ -3,7 +3,7 @@
 # Slurm sbatch options
 #SBATCH -a 0-2
 #SBATCH -o mqmix_%a.out # name the output file
-#SBATCH --job-name mqmix
+#SBATCH --job-name reparam
 #SBATCH -c 20 # cpus per task
 
 # Loading the required module
@@ -19,7 +19,7 @@ num_landmarks=3
 num_agents=3
 algo="rmappo"
 exp_names=("beta_4" "beta_3" "beta_2")
-seed_max=1
+seed=1
 betas=(8e-4 8e-3 8e-2)
 mu_coeffs=1
 var_coeffs=1
