@@ -2,11 +2,14 @@
 __pycache__/
 *.py[cod]
 *$py.class
+*$py.c
 
 # C extensions
 *.so
 
 # custom files
+*.out
+*.pyc
 .vscode/
 .DS_Store
 wandb*
