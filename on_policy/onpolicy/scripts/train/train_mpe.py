@@ -10,6 +10,7 @@ import torch
 
 sys.path.append(os.path.abspath(os.getcwd()))
 
+from utils.utils import print_args, print_box, connected_to_internet
 from onpolicy.config import get_config
 from onpolicy.envs.mpe.MPE_env import MPEEnv
 from onpolicy.envs.env_wrappers import SubprocVecEnv, DummyVecEnv
@@ -92,6 +93,9 @@ def main(args):
         print("choose to use cpu...")
         device = torch.device("cpu")
         torch.set_num_threads(all_args.n_training_threads)
+    
+    if all_args.verbose:
+        print_args(all_args)
 
     # run dir
     run_dir = Path(os.path.split(os.path.dirname(os.path.abspath(__file__)))[
@@ -101,6 +105,21 @@ def main(args):
 
     # wandb
     if all_args.use_wandb:
+        # for supercloud when no internet_connection
+        if not connected_to_internet():
+            import json
+            # save a json file with your wandb api key in your 
+            # home folder as {'my_wandb_api_key': 'INSERT API HERE'}
+            # NOTE this is only for running on systems without internet access
+            # have to run `wandb sync wandb/run_name` to sync logs to wandboard
+            with open(os.path.expanduser('~')+'/keys.json') as json_file: 
+                key = json.load(json_file)
+                my_wandb_api_key = key['my_wandb_api_key'] # NOTE change here as well
+            os.environ["WANDB_API_KEY"] = my_wandb_api_key
+            os.environ["WANDB_MODE"] = "dryrun"
+            os.environ['WANDB_SAVE_CODE'] = "true"
+
+        print_box('Creating wandboard...')
         run = wandb.init(config=all_args,
                          project=all_args.env_name,
                          entity=all_args.user_name,
@@ -154,6 +173,16 @@ def main(args):
         from onpolicy.runner.separated.mpe_runner import MPERunner as Runner
 
     runner = Runner(config)
+    if all_args.verbose:
+        print_box('Actor Network', 80)
+        if type(runner.policy)==list:
+            print_box(runner.policy[0].actor, 80)
+            print_box('Critic Network', 80)
+            print_box(runner.policy[0].critic, 80)
+        else:
+            print_box(runner.policy.actor, 80)
+            print_box('Critic Network', 80)
+            print_box(runner.policy.critic, 80)
     runner.run()
     
     # post process

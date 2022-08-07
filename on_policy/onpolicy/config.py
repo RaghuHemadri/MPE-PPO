@@ -291,4 +291,9 @@ def get_config():
     parser.add_argument("--mu_coef", type=float, default=1, help="Rescaling coefficient of mu")
     parser.add_argument("--var_coef", type=float, default=3, help="Rescaling coefficient of var")
 
+    # misc parameters
+    parser.add_argument("--verbose", action='store_false', default=True, 
+                        help="by default, print args and network at the begining.")
+
+
     return parser
