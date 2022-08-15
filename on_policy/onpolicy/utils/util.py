@@ -43,7 +43,6 @@ def kl_divergence(z, mu, log_var):
 
     # kl
     kl = (log_qzx - log_pz)
-    kl = kl.sum(-1)
     return kl
 
 def get_shape_from_obs_space(obs_space):

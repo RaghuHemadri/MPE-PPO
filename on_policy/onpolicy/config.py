@@ -1,4 +1,5 @@
 import argparse
+from distutils.util import strtobool 
 
 
 def get_config():
@@ -285,7 +286,14 @@ def get_config():
     parser.add_argument("--model_dir", type=str, default=None, help="by default None. set the path to pretrained model.")
 
     #reparametrization parameters
-    parser.add_argument("--use_reparametrization", action='store_true', default=False, help="by default, do not use reparametrization. If set reparametrization is done.")
+    parser.add_argument("--use_reparametrization", type=lambda x:bool(strtobool(x)), default=False, help="by default, do not use reparametrization. If set reparametrization is done.")
     parser.add_argument("--beta", type=float, default=0.1, help="the weighted hyperparameter for reparametrization.")
+    parser.add_argument("--mu_coef", type=float, default=1, help="Rescaling coefficient of mu")
+    parser.add_argument("--var_coef", type=float, default=3, help="Rescaling coefficient of var")
+
+    # misc parameters
+    parser.add_argument("--verbose", action='store_false', default=True, 
+                        help="by default, print args and network at the begining.")
+
 
     return parser

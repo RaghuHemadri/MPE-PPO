@@ -1,0 +1,90 @@
+program: train/train_mpe.py
+method: bayes
+metric:
+  goal: minimize
+  name: policy_loss
+parameters:
+  value_loss_coef:
+    max: 3.4612137818200783
+    min: 0.5
+    distribution: uniform
+  entropy_coef:
+    max: 0.035353400966860786
+    min: 0.002922727793146872
+    distribution: uniform
+  gae_lambda:
+    max: 3.707909777129675
+    min: 0.27143304922400324
+    distribution: uniform
+  clip_param:
+    max: 0.7721216360730746
+    min: 0.06972628675289866
+    distribution: uniform
+  critic_lr:
+    max: 0.0025956264231761506
+    min: 0.0002272634178156755
+    distribution: uniform
+  var_coef:
+    max: 11.346288778302398
+    min: 0.5050692877589792
+    distribution: uniform
+  opti_eps:
+    max: 0.00003542865184049908
+    min: 0.000002857029088659676
+    distribution: uniform
+  mu_coef:
+    max: 6.095572286199515
+    min: 0.5
+    distribution: uniform
+  gamma:
+    max: 3.11377323010671
+    min: 0.495
+    distribution: uniform
+  gain:
+    max: 0.03958068908081315
+    min: 0.003687417150109909
+    distribution: uniform
+  beta:
+    max: 0.6404153262384442
+    min: 0.0004
+    distribution: uniform
+  ifi:
+    max: 0.20648350904819393
+    min: 0.029019673309282713
+    distribution: uniform
+  lr:
+    max: 0.002130026292797517
+    min: 0.00019719450919897908
+    distribution: uniform
+command:
+  - "python"
+  - "train/train_mpe.py"
+  - "--env_name"
+  - "MPE"
+  - "--algorithm_name"
+  - "rmappo"
+  - "--experiment_name"
+  - "check"
+  - "--scenario_name"
+  - "simple_spread"
+  - "--num_agents"
+  - "3"
+  - "--num_landmarks"
+  - "3"
+  - "--seed"
+  - "1"
+  - "--n_training_threads"
+  - "1"
+  - "--n_rollout_threads"
+  - "12"
+  - "--num_mini_batch"
+  - "1"
+  - "--episode_length"
+  - "2" 
+  - "--num_env_steps"
+  - "20000000"
+  - "--ppo_epoch"
+  - "6"
+  - "--use_ReLU"
+  - "--use_reparametrization"
+  - "1"

@@ -6,8 +6,8 @@ num_agents=3
 algo="rmappo"
 exp="check"
 seed_max=1
-beta=0.2
-use_reparametrization="True"
+beta=8e-4
+use_reparametrization=1
 
 echo "env is ${env}, scenario is ${scenario}, algo is ${algo}, exp is ${exp}, max seed is ${seed_max}"
 for seed in `seq ${seed_max}`;

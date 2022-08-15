@@ -135,12 +135,15 @@ class R_MAPPO():
         else:
             policy_action_loss = -torch.sum(torch.min(surr1, surr2), dim=-1, keepdim=True).mean()
 
-        policy_loss = policy_action_loss
-
         if self._use_reparametrization:
             kl_loss = kl_divergence(z, mu, log_var)
             kl_loss = torch.mul(self.beta, kl_loss)
-            policy_loss -= torch.sum(kl_loss, dim=-1, keepdim=True).mean()
+            kl_loss = -torch.mean(kl_loss, dim=-1, keepdim=True).mean()
+
+        else:
+            kl_loss = torch.tensor(0)
+
+        policy_loss = policy_action_loss + kl_loss
 
         self.policy.actor_optimizer.zero_grad()
 
@@ -168,7 +171,7 @@ class R_MAPPO():
 
         self.policy.critic_optimizer.step()
 
-        return value_loss, critic_grad_norm, policy_loss, dist_entropy, actor_grad_norm, imp_weights
+        return value_loss, critic_grad_norm, policy_loss, policy_action_loss, kl_loss, dist_entropy, actor_grad_norm, imp_weights
 
     def train(self, buffer, update_actor=True):
         """
@@ -197,6 +200,8 @@ class R_MAPPO():
         train_info['actor_grad_norm'] = 0
         train_info['critic_grad_norm'] = 0
         train_info['ratio'] = 0
+        train_info['kl_loss'] = 0
+        train_info['policy_action_loss'] = 0
 
         for _ in range(self.ppo_epoch):
             if self._use_recurrent_policy:
@@ -208,11 +213,13 @@ class R_MAPPO():
 
             for sample in data_generator:
 
-                value_loss, critic_grad_norm, policy_loss, dist_entropy, actor_grad_norm, imp_weights \
+                value_loss, critic_grad_norm, policy_loss, policy_action_loss, kl_loss, dist_entropy, actor_grad_norm, imp_weights \
                     = self.ppo_update(sample, update_actor)
 
                 train_info['value_loss'] += value_loss.item()
                 train_info['policy_loss'] += policy_loss.item()
+                train_info['policy_action_loss'] += policy_action_loss.item()
+                train_info['kl_loss'] += kl_loss.item()
                 train_info['dist_entropy'] += dist_entropy.item()
                 train_info['actor_grad_norm'] += actor_grad_norm
                 train_info['critic_grad_norm'] += critic_grad_norm
