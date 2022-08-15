@@ -183,6 +183,17 @@ def get_config():
     parser.add_argument("--env_name", type=str, default='StarCraft2', help="specify the name of environment")
     parser.add_argument("--use_obs_instead_of_state", action='store_true',
                         default=False, help="Whether to use global state or concatenated obs")
+    parser.add_argument("--obs_type", type=str, choices=['local', 'global', 'nbd'],
+                        default='global', help="Whether to use local obs for navigation.py")
+    parser.add_argument('--max_edge_dist', type=float, default=1, 
+                        help="Maximum distance above which edges cannot be "
+                        "connected between the entities; used for `obs_type==ndb_obs`")
+    parser.add_argument('--num_nbd_entities', type=int, default=3,
+                        help="Number of entities to be considered as neighbors "
+                        "for `obs_type==ndb_obs`")
+    parser.add_argument('--use_comm', type=lambda x:bool(strtobool(x)), 
+                        default=False, help="Whether to use communication "
+                        "channel for agent observation")
 
     # replay buffer parameters
     parser.add_argument("--episode_length", type=int,

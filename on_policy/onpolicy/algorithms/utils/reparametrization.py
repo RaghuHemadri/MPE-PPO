@@ -1,7 +1,8 @@
 import torch.nn as nn
 import torch
 
-from on_policy.utils.utils import store_args
+from utils.utils import store_args
+from typing import Tuple
 
 class ReparamLayer(nn.Module):
     @store_args
@@ -21,9 +22,9 @@ class ReparamLayer(nn.Module):
             self.fc_var.weight.data.uniform_(-init_w, init_w)
             self.fc_var.bias.data.uniform_(-init_w, init_w)
 
-    def forward(self, x:torch.FloatTensor) -> tuple(torch.FloatTensor, 
+    def forward(self, x:torch.FloatTensor) -> Tuple[torch.FloatTensor, 
                                                     torch.FloatTensor, 
-                                                    torch.FloatTensor):
+                                                    torch.FloatTensor]:
         if self.use_activation:
             mu      = torch.tanh(self.fc_mu(x)) * self.mu_coef
             log_var = torch.tanh(self.fc_var(x)) * self.var_coef

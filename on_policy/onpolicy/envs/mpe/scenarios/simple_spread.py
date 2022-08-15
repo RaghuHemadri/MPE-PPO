@@ -4,7 +4,41 @@ from onpolicy.envs.mpe.scenario import BaseScenario
 
 
 class Scenario(BaseScenario):
+    """
+            Parameters in args
+            ––––––––––––––––––
+            • num_agents: int
+                Number of agents in the environment
+                NOTE: this is equal to the number of goal positions
+            • collaborative: bool
+                If True then reward for all agents is sum(reward_i)
+                If False then reward for each agent is what it gets individually
+            • obs_type: str
+                Choices: ['global', 'local', 'nbd']
+                Whether we want include the [pos, vel] of just the neighbourhood
+                instead of all entities in the environment for the observation
+            ____________________________________________________________________
+            If `obs_type== global` then the observation is the concatenation of
+                [pos, vel] of all entities in the environment
+            If `obs_type== local` then the observation is the [pos, vel] of the
+                agent
+            If `obs_type == ndb_obs` then each agent's observation is just the 
+                [pos, vel] of  neighbouring `n` entities, provided that they are 
+                within `max_edge_dist` of each other. If there are less than `n` 
+                entities within `max_edge_dist` of each other, then pad with zeros.
+            ____________________________________________________________________
+            • max_edge_dist: float
+                Maximum distance for an entity to be considered as neighbour
+            • nbd_entities: int
+                Number of neighbouring entities to consider in the environment
+            • use_comm: bool
+                Whether we want to use communication or not
+        """
     def make_world(self, args):
+        self.obs_type = args.obs_type
+        self.use_comm = args.use_comm
+        self.max_edge_dist = args.max_edge_dist
+        self.num_nbd_entities = args.num_nbd_entities
         world = World()
         world.world_length = args.episode_length
         # set any world properties first
@@ -83,15 +117,11 @@ class Scenario(BaseScenario):
                     rew -= 1
         return rew
 
-    def observation(self, agent, world):
+    def old_observation(self, agent, world):
         # get positions of all entities in this agent's reference frame
         entity_pos = []
         for entity in world.landmarks:  # world.entities:
             entity_pos.append(entity.state.p_pos - agent.state.p_pos)
-        # entity colors
-        entity_color = []
-        for entity in world.landmarks:  # world.entities:
-            entity_color.append(entity.color)
         # communication of all other agents
         comm = []
         other_pos = []
@@ -101,3 +131,53 @@ class Scenario(BaseScenario):
             comm.append(other.state.c)
             other_pos.append(other.state.p_pos - agent.state.p_pos)
         return np.concatenate([agent.state.p_vel] + [agent.state.p_pos] + entity_pos + other_pos + comm)
+    
+    def observation(self, agent:Agent, world:World) -> np.ndarray:
+        """
+            agent: Agent object
+            world: World object
+            if obs_type=='local':
+                return: agent_vel, agent_pos, agent_goal_pos
+            if obs_type=='global':
+                include information about all entities in the world:
+                agent_vel, agent_pos, goal_pos, [other_agents_pos], [obstacles_pos]
+            if obs_type=='nbd':
+                return: agent_vel, agent_pos, agent_goal_pos, [other_entities_in_nbd_pos]
+        """
+        # get positions of all entities in this agent's reference frame
+        agent_vel, agent_pos = agent.state.p_vel, agent.state.p_pos
+        # communication of all other agents
+        comm, other_agents_pos, obstacle_pos = [], [], []
+        dist_mag = []
+        if self.obs_type == 'local':
+            other_pos = other_agents_pos + obstacle_pos # remember this is just concatenation of lists
+        else:
+            # get position of all other agents in this agent's reference frame
+            for other in world.agents:
+                if other is agent: continue
+                comm.append(other.state.c)
+                other_agents_pos.append(np.array(other.state.p_pos - agent_pos))
+                dist_mag.append(np.linalg.norm(other_agents_pos[-1]))
+            # get position of all obstacles in this agent's reference frame
+            landmark_pos = []
+            for landmark in world.landmarks:
+                landmark_pos.append(np.array(landmark.state.p_pos - agent_pos))
+                dist_mag.append(np.linalg.norm(landmark_pos[-1]))
+            other_pos = np.array(other_agents_pos + landmark_pos)   # remember + is just concatenation of lists
+            if self.obs_type == 'nbd':
+                # sort other_pos according to distance from agent
+                dist_mag_sort, dist_sort_idx = np.sort(dist_mag), np.argsort(dist_mag)
+                other_pos = other_pos[dist_sort_idx, :]
+                filter = np.array(dist_mag_sort)<self.max_edge_dist
+                filter = np.expand_dims(filter, axis=1) # shape (num_entities, 1)
+                filter = np.repeat(filter, axis=1, repeats=other_pos.shape[1])
+                # all pos_entities outside max_edge_dist are set to 0
+                other_pos = other_pos * filter
+                # only take the closes num_nbd_entities
+                other_pos = other_pos[:self.num_nbd_entities, :]
+            other_pos = other_pos.flatten()
+        if self.use_comm:
+            return np.concatenate([agent_vel, agent_pos, other_pos, 
+                                    np.array(comm).flatten()])
+        else:
+            return np.concatenate([agent_vel, agent_pos, other_pos])
