@@ -8,7 +8,7 @@
 
 # Loading the required module
 source /etc/profile
-module load anaconda/2020a
+module load anaconda/2022a
 
 logs_folder="reparam"
 mkdir -p $logs_folder
