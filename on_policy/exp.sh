@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # Slurm sbatch options
-#SBATCH -a 0-2
-#SBATCH -o mqmix_%a.out # name the output file
+#SBATCH -a 0-5
+#SBATCH -o reparam_%a.out # name the output file
 #SBATCH --job-name reparam
 #SBATCH -c 20 # cpus per task
 
@@ -10,7 +10,7 @@
 source /etc/profile
 module load anaconda/2020a
 
-logs_folder="betas"
+logs_folder="reparam"
 mkdir -p $logs_folder
 
 env="MPE"
@@ -18,9 +18,9 @@ scenario="simple_spread"  # simple_speaker_listener # simple_reference
 num_landmarks=3
 num_agents=3
 algo="rmappo"
-exp_names=("beta_4" "beta_3" "beta_2")
+exp_names=("r_local_beta4" "r_local_beta3" "r_nbd3_beta4" "r_nbd3_beta3" "r_global_beta4" "r_global_beta3")
 seed=1
-betas=(8e-4 8e-3 8e-2)
+betas=(8e-4 8e-3 8e-4 8e-3 8e-4 8e-3)
 mu_coeffs=1
 var_coeffs=1
 use_reparametrization="True"
