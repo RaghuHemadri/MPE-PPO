@@ -9,6 +9,7 @@ from pathlib import Path
 import torch
 
 sys.path.append(os.path.abspath(os.getcwd()))
+sys.path.append('../..')
 
 from utils.utils import print_args, print_box, connected_to_internet
 from onpolicy.config import get_config
