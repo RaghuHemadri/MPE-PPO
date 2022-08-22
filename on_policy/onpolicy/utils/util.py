@@ -33,7 +33,7 @@ def kl_divergence(z, mu, log_var):
     # Monte carlo KL divergence
     # --------------------------
     # 1. define the first two probabilities (in this case Normal for both)
-    std = torch.exp(log_var / 2)
+    std = torch.exp(torch.add(log_var, 1e-16))
     p = torch.distributions.Normal(torch.zeros_like(mu), torch.ones_like(std))
     q = torch.distributions.Normal(mu, std)
 
