@@ -137,8 +137,8 @@ class R_MAPPO():
 
         if self._use_reparametrization:
             kl_loss = kl_divergence(z, mu, log_var)
-            kl_loss = torch.mul(self.beta, kl_loss)
-            kl_loss = -torch.mean(kl_loss, dim=-1, keepdim=True).mean()
+            kl_loss = -torch.mul(self.beta, kl_loss)
+            # kl_loss = -torch.mean(kl_loss, dim=-1, keepdim=True).mean()
 
         else:
             kl_loss = torch.tensor(0)

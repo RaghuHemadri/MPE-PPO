@@ -29,20 +29,25 @@ def mse_loss(e):
     return e**2/2
 
 def kl_divergence(z, mu, log_var):
-    # --------------------------
-    # Monte carlo KL divergence
-    # --------------------------
-    # 1. define the first two probabilities (in this case Normal for both)
-    std = torch.exp(torch.add(log_var, 1e-16))
-    p = torch.distributions.Normal(torch.zeros_like(mu), torch.ones_like(std))
-    q = torch.distributions.Normal(mu, std)
+    # # --------------------------
+    # # Monte carlo KL divergence
+    # # --------------------------
+    # # 1. define the first two probabilities (in this case Normal for both)
+    # std = torch.exp(torch.add(log_var, 1e-16))
+    # p = torch.distributions.Normal(torch.zeros_like(mu), torch.ones_like(std))
+    # q = torch.distributions.Normal(mu, std)
 
-    # 2. get the probabilities from the equation
-    log_qzx = q.log_prob(z)
-    log_pz = p.log_prob(z)
+    # # 2. get the probabilities from the equation
+    # log_qzx = q.log_prob(z)
+    # log_pz = p.log_prob(z)
 
-    # kl
-    kl = (log_qzx - log_pz)
+    # # kl
+    # kl = (log_qzx - log_pz)
+
+    sigma2 = torch.add(torch.square(log_var), 1e-16)
+    mu2 = torch.square(mu)
+    kl = 0.5 * (mu2 + sigma2 - 1 - torch.log(sigma2))
+    kl = torch.mean(torch.mean(kl, dim = 1))
     return kl
 
 def get_shape_from_obs_space(obs_space):

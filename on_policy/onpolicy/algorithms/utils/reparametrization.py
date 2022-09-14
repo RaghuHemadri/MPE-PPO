@@ -35,8 +35,8 @@ class ReparamLayer(nn.Module):
             mu      = self.fc_mu(x)
             log_var = self.fc_var(x)
 
-        std = torch.exp(torch.add(log_var, 1e-16))
-        q = torch.distributions.Normal(mu, std)
+        # std = torch.exp(torch.add(log_var, 1e-16))
+        q = torch.distributions.Normal(mu, log_var)
         z = q.rsample()
 
         # print("mu: ", mu, "\nlog_var: ", log_var)
