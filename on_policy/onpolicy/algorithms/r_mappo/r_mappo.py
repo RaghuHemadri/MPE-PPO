@@ -122,6 +122,15 @@ class R_MAPPO():
                                                                               masks_batch, 
                                                                               available_actions_batch,
                                                                               active_masks_batch)
+
+        if self._use_reparametrization:
+            kl_loss = kl_divergence(z, mu, log_var)
+            kl_loss = -torch.mul(self.beta, kl_loss)
+            # kl_loss = -torch.mean(kl_loss, dim=-1, keepdim=True).mean()
+
+        else:
+            kl_loss = torch.tensor(0)
+
         # actor update
         imp_weights = torch.exp(action_log_probs - old_action_log_probs_batch)
 
@@ -135,15 +144,7 @@ class R_MAPPO():
         else:
             policy_action_loss = -torch.sum(torch.min(surr1, surr2), dim=-1, keepdim=True).mean()
 
-        if self._use_reparametrization:
-            kl_loss = kl_divergence(z, mu, log_var)
-            kl_loss = -torch.mul(self.beta, kl_loss)
-            # kl_loss = -torch.mean(kl_loss, dim=-1, keepdim=True).mean()
-
-        else:
-            kl_loss = torch.tensor(0)
-
-        policy_loss = policy_action_loss + kl_loss
+        policy_loss = policy_action_loss
 
         self.policy.actor_optimizer.zero_grad()
 
